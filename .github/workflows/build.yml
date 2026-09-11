@@ -42,8 +42,9 @@ jobs:
           python -m pip install --upgrade pip setuptools
           python -m pip install "cython<3.0.0" "buildozer==1.5.0"
 
-      - name: Build with Buildozer
-        run: buildozer -v android debug
+      - name: Accept Android SDK Licenses & Build
+        run: |
+          yes | buildozer -v android debug
         env:
           BUILDOZER_WARN_ON_ROOT: 0
 
