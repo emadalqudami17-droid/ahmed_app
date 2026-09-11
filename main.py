@@ -9,31 +9,15 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.core.audio import SoundLoader
 from kivy.core.window import Window
 from kivy.clock import Clock
-from kivy.utils import platform
-
-import arabic_reshaper
-from bidi.algorithm import get_display
-
-# مسار الموارد (مهم للعمل على Android)
-def resource_path(relative):
-    if platform == 'android':
-        from android.storage import app_storage_path
-        from os.path import join
-        return join(app_storage_path(), relative)
-    return relative
-
-# دالة معالجة النص العربي
-def ar(text):
-    try:
-        reshaped = arabic_reshaper.reshape(text)
-        return get_display(reshaped)
-    except Exception:
-        return text
 
 # مسار الخط العربي
 FONT_ARABIC = 'ArabicFont.ttf'
 
-# مدة صوت التشجيع بالثواني
+# Kivy 2.3.1+ يدعم RTL أصلياً
+def ar(text):
+    return text
+
+# مدة صوت التشجيع
 CHEER_DURATION = 2.0
 
 
@@ -48,6 +32,7 @@ class MainMenuScreen(Screen):
             font_size='34sp',
             bold=True,
             font_name=FONT_ARABIC,
+            halign='center',
             size_hint=(1, 0.2)
         )
         layout.add_widget(title)
@@ -63,7 +48,7 @@ class MainMenuScreen(Screen):
         layout.add_widget(btn_routine)
 
         btn_aac = Button(
-            text=ar("أنا أريد (التواصل)"),
+            text=ar("أنا أريد"),
             font_size='24sp', bold=True,
             font_name=FONT_ARABIC,
             background_color=(0.3, 0.8, 0.4, 1),
@@ -73,7 +58,7 @@ class MainMenuScreen(Screen):
         layout.add_widget(btn_aac)
 
         btn_game = Button(
-            text=ar("لعبة الأسئلة والتركيز"),
+            text=ar("لعبة الأسئلة"),
             font_size='24sp', bold=True,
             font_name=FONT_ARABIC,
             background_color=(0.9, 0.6, 0.2, 1),
@@ -105,7 +90,7 @@ class ToiletRoutineScreen(Screen):
         btn_back = Button(
             text=ar("القائمة"),
             font_size='18sp', font_name=FONT_ARABIC,
-            size_hint=(0.3, 0.08),
+            size_hint=(1, 0.1),
             background_color=(0.8, 0.3, 0.3, 1)
         )
         btn_back.bind(on_press=self.go_home)
@@ -115,13 +100,16 @@ class ToiletRoutineScreen(Screen):
             text=ar(self.steps[0]["text"]),
             font_size='28sp', bold=True,
             font_name=FONT_ARABIC,
-            size_hint=(1, 0.12)
+            size_hint=(1, 0.12),
+            halign='center',
+            valign='middle'
         )
+        self.label.bind(size=self.label.setter('text_size'))
         self.layout.add_widget(self.label)
 
         self.img = Image(
             source=self.steps[0]["image"],
-            size_hint=(1, 0.6),
+            size_hint=(1, 0.58),
             allow_stretch=True,
             keep_ratio=True,
             nocache=True
@@ -141,7 +129,6 @@ class ToiletRoutineScreen(Screen):
         self.add_widget(self.layout)
 
     def on_enter(self):
-        # إعادة ضبط عند الدخول
         if self.current_step == -1:
             self.current_step = 0
             self.label.text = ar(self.steps[0]["text"])
@@ -150,13 +137,11 @@ class ToiletRoutineScreen(Screen):
         Clock.schedule_once(lambda dt: self.play_step_audio(), 0.3)
 
     def play_step_audio(self):
-        # أوقف الصوت السابق إن وجد
         if self.current_sound:
             try:
                 self.current_sound.stop()
             except Exception:
                 pass
-
         if 0 <= self.current_step < len(self.steps):
             sound = SoundLoader.load(self.steps[self.current_step]["audio"])
             if sound:
@@ -164,7 +149,6 @@ class ToiletRoutineScreen(Screen):
                 sound.play()
 
     def next_step(self, instance):
-        # إذا كان الزر في وضع "إعادة"
         if self.current_step == -1:
             self.current_step = 0
             self.label.text = ar(self.steps[0]["text"])
@@ -173,21 +157,16 @@ class ToiletRoutineScreen(Screen):
             self.play_step_audio()
             return
 
-        # تشغيل صوت التشجيع
         cheer = SoundLoader.load('audio/cheer.wav')
         if cheer:
             cheer.play()
 
         if self.current_step < len(self.steps) - 1:
-            # الانتقال للخطوة التالية
             self.current_step += 1
             self.label.text = ar(self.steps[self.current_step]["text"])
             self.img.source = self.steps[self.current_step]["image"]
-
-            # تشغيل صوت الخطوة الجديدة بعد انتهاء التشجيع
             Clock.schedule_once(lambda dt: self.play_step_audio(), CHEER_DURATION)
         else:
-            # آخر خطوة
             Clock.schedule_once(lambda dt: self.show_final_message(), CHEER_DURATION)
 
     def show_final_message(self):
@@ -214,7 +193,7 @@ class AACBoardScreen(Screen):
         btn_back = Button(
             text=ar("القائمة"),
             font_size='18sp', font_name=FONT_ARABIC,
-            size_hint=(0.3, 0.08),
+            size_hint=(1, 0.08),
             background_color=(0.8, 0.3, 0.3, 1)
         )
         btn_back.bind(on_press=lambda x: setattr(self.manager, 'current', 'main_menu'))
@@ -240,9 +219,10 @@ class AACBoardScreen(Screen):
         for card in self.cards:
             btn = Button(
                 text=ar(card["title"]),
-                font_size='18sp', bold=True,
+                font_size='22sp', bold=True,
                 font_name=FONT_ARABIC,
-                background_color=card["color"]
+                background_color=card["color"],
+                size_hint=(1, 1)
             )
             btn.bind(on_press=lambda instance, a=card["audio"]: self.play_phrase(a))
             grid.add_widget(btn)
@@ -251,13 +231,11 @@ class AACBoardScreen(Screen):
         self.add_widget(main_layout)
 
     def play_phrase(self, audio_file):
-        # أوقف الصوت السابق
         if self.current_sound:
             try:
                 self.current_sound.stop()
             except Exception:
                 pass
-
         sound = SoundLoader.load(audio_file)
         if sound:
             self.current_sound = sound
@@ -302,7 +280,7 @@ class QuizGameScreen(Screen):
         btn_back = Button(
             text=ar("القائمة"),
             font_size='18sp', font_name=FONT_ARABIC,
-            size_hint=(0.3, 0.08),
+            size_hint=(1, 0.08),
             background_color=(0.8, 0.3, 0.3, 1)
         )
         btn_back.bind(on_press=lambda x: setattr(self.manager, 'current', 'main_menu'))
@@ -312,18 +290,20 @@ class QuizGameScreen(Screen):
             text=ar(self.questions[0]["question"]),
             font_size='28sp', bold=True,
             font_name=FONT_ARABIC,
-            size_hint=(1, 0.15)
+            size_hint=(1, 0.15),
+            halign='center',
+            valign='middle'
         )
+        self.label.bind(size=self.label.setter('text_size'))
         self.layout.add_widget(self.label)
 
-        self.grid = GridLayout(cols=3, spacing=10, size_hint=(1, 0.75))
+        self.grid = GridLayout(cols=3, spacing=10, size_hint=(1, 0.77))
         self.update_options()
         self.layout.add_widget(self.grid)
 
         self.add_widget(self.layout)
 
     def on_enter(self):
-        # إعادة ضبط اللعبة عند الدخول
         self.current_q = 0
         self.label.text = ar(self.questions[0]["question"])
         self.update_options()
@@ -335,7 +315,6 @@ class QuizGameScreen(Screen):
                 self.current_sound.stop()
             except Exception:
                 pass
-
         sound = SoundLoader.load(self.questions[self.current_q]["audio"])
         if sound:
             self.current_sound = sound
@@ -345,28 +324,21 @@ class QuizGameScreen(Screen):
         self.grid.clear_widgets()
         q_data = self.questions[self.current_q]
         for opt in q_data["options"]:
-            # حاوية لكل خيار
-            box = BoxLayout(padding=5)
-
-            # زر شفاف
             btn = Button(
                 background_normal='',
-                background_color=(0, 0, 0, 0),
+                background_color=(0.95, 0.95, 0.95, 1),
                 size_hint=(1, 1)
             )
-
-            # صورة فوق الزر بنسبة محفوظة
             img = Image(
                 source=opt,
                 allow_stretch=True,
                 keep_ratio=True,
-                size_hint=(1, 1)
+                size_hint=(1, 1),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5}
             )
-
             btn.add_widget(img)
             btn.bind(on_press=lambda instance, i=opt: self.check_answer(i))
-            box.add_widget(btn)
-            self.grid.add_widget(box)
+            self.grid.add_widget(btn)
 
     def check_answer(self, selected_img):
         correct_img = self.questions[self.current_q]["correct"]
@@ -374,20 +346,15 @@ class QuizGameScreen(Screen):
             cheer = SoundLoader.load('audio/cheer.wav')
             if cheer:
                 cheer.play()
-
             if self.current_q < len(self.questions) - 1:
                 self.current_q += 1
                 self.label.text = ar(self.questions[self.current_q]["question"])
                 self.update_options()
-
-                # تشغيل صوت السؤال الجديد بعد انتهاء التشجيع
                 Clock.schedule_once(lambda dt: self.play_q_audio(), CHEER_DURATION)
             else:
-                # آخر سؤال
-                self.label.text = ar("ممتاز! أنهيت كل الأسئلة!")
+                self.label.text = ar("ممتاز! أنهيت الأسئلة")
                 self.grid.clear_widgets()
         else:
-            # إجابة خاطئة: أعد تشغيل السؤال
             self.play_q_audio()
 
 
@@ -401,6 +368,9 @@ class AhmedApp(App):
         sm.add_widget(AACBoardScreen(name='aac_board'))
         sm.add_widget(QuizGameScreen(name='quiz_game'))
         return sm
+
+    def on_start(self):
+        Window.clearcolor = (1, 1, 1, 1)
 
 
 if __name__ == '__main__':
