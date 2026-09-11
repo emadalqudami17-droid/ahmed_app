@@ -2,6 +2,7 @@
 title = Ahmed App
 package.name = ahmedapp
 package.domain = org.ahmed
+p4a.branch = v2024.01.21
 
 source.dir = .
 source.include_exts = py,png,jpg,jpeg,kv,atlas,wav,ttf,mp3
@@ -9,7 +10,7 @@ source.exclude_dirs = bin,.buildozer,images/raw,audio/raw
 
 version = 1.0.0
 
-requirements = python3,kivy==2.1.0,arabic-reshaper,python-bidi,pyjnius
+requirements = python3,kivy==2.1.0,arabic-reshaper,python-bidi==0.4.2,pyjnius
 
 orientation = portrait
 fullscreen = 1
