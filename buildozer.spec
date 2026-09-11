@@ -22,7 +22,7 @@ source.exclude_dirs = tests, bin, venv, .git, .github
 version = 0.1
 
 # (list) Application requirements
-requirements = python3,kivy,plyer
+requirements = python3,kivy
 
 # (str) Icon of the application
 icon.filename = %(source.dir)s/app_icon.png
@@ -37,7 +37,7 @@ orientation = portrait
 fullscreen = 0
 
 # (list) Permissions needed by the app
-android.permissions = INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, VIBRATE
+android.permissions = INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
 
 # (int) Target Android API, should be as high as possible
 android.api = 33
