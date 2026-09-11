@@ -13,6 +13,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -43,6 +49,12 @@ jobs:
             libgdbm-dev libnss3-dev libncurses-dev \
             uuid-dev
       
+      - name: Verify Java version
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME"
+          java -version
+          javac -version
+      
       - name: Install Buildozer and Cython
         run: |
           pip install --upgrade pip
@@ -50,6 +62,7 @@ jobs:
       
       - name: Build with Buildozer
         run: |
+          export JAVA_HOME=$JAVA_HOME_17_X64
           yes | buildozer -v android debug
         env:
           BUILDOZER_WARN_ON_ROOT: 0
