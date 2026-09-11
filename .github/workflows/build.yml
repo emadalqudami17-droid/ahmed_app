@@ -33,28 +33,26 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk \
-            autoconf libtool pkg-config zlib1g-dev libncurses5-dev \
-            libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev \
-            automake autopoint libtool-bin
+          sudo apt install -y \
+            git zip unzip openjdk-17-jdk \
+            autoconf libtool pkg-config \
+            zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 \
+            cmake libffi-dev libssl-dev \
+            automake autopoint libtool-bin \
+            liblzma-dev libbz2-dev libreadline-dev libsqlite3-dev \
+            libgdbm-dev libnss3-dev libncurses-dev \
+            uuid-dev
       
       - name: Install Buildozer and Cython
         run: |
           pip install --upgrade pip
           pip install buildozer cython==0.29.36
       
-      - name: Pre-install cgi compatibility and bidi
-        run: |
-          pip install legacy-cgi
-          pip install python-bidi==0.4.2
-          pip install arabic-reshaper
-      
       - name: Build with Buildozer
         run: |
           yes | buildozer -v android debug
         env:
           BUILDOZER_WARN_ON_ROOT: 0
-          PYTHONPATH: ${{ github.workspace }}
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
