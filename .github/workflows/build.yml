@@ -24,18 +24,6 @@ jobs:
         with:
           python-version: '3.10'
       
-      - name: Organize files into folders
-        run: |
-          mkdir -p images audio
-          mv *.png images/ 2>/dev/null || true
-          mv *.wav audio/ 2>/dev/null || true
-          echo "=== Root ==="
-          ls -la
-          echo "=== images ==="
-          ls images/ | head -5
-          echo "=== audio ==="
-          ls audio/ | head -5
-      
       - name: Install system dependencies
         run: |
           sudo apt update
@@ -48,25 +36,19 @@ jobs:
             liblzma-dev libbz2-dev libreadline-dev libsqlite3-dev \
             libgdbm-dev libnss3-dev libncurses-dev \
             uuid-dev
-      
-      - name: Verify Java version
-        run: |
-          echo "JAVA_HOME=$JAVA_HOME"
-          java -version
-          javac -version
-      
-      - name: Install Buildozer and Cython
+
+      - name: Install Buildozer and Dependencies
         run: |
           pip install --upgrade pip
           pip install buildozer cython==0.29.36
-      
+
       - name: Build with Buildozer
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
           yes | buildozer -v android debug
         env:
           BUILDOZER_WARN_ON_ROOT: 0
-      
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
